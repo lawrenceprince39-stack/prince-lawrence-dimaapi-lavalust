@@ -8,7 +8,10 @@ Project output: installed and verified LavaLust project source. The required sub
 
 ## Lab 2 - GitHub and Render Deployment
 
-Project output: personalized landing page, Dockerfile, environment configuration, and a local Git commit ready for deployment. The public Render URL is pending GitHub and Render authentication.
+Project output: personalized landing page, Dockerfile, environment configuration, GitHub repository, and a live Render deployment.
+
+- GitHub: <https://github.com/lawrenceprince39-stack/prince-lawrence-dimaapi-lavalust>
+- Live website: <https://prince-lawrence-dimaapi-lavalust.onrender.com/>
 
 ## Lab 3 - Routing, Controller, Views, and Middleware
 
@@ -34,6 +37,8 @@ Project output: personalized landing page, Dockerfile, environment configuration
 - `ProductModel`, `ProductController`, and `ProductAuthMiddleware`
 - Aiven MySQL service: `dimaapi-prince-lab5-mysql` (Free tier)
 - `database/lab5_products.sql` - products table schema
+- Live CRUD: <https://prince-lawrence-dimaapi-lavalust.onrender.com/products>
+- Demo login credentials are supplied separately from the public repository.
 
 ## Verification Status
 
@@ -42,5 +47,8 @@ Project output: personalized landing page, Dockerfile, environment configuration
 - Lab 5 structural test: PASS
 - PHP syntax checks: PASS
 - Aiven MySQL service creation: COMPLETE
-- GitHub push: PENDING SIGN-IN
-- Render deployment and public Lab 5 link: PENDING SIGN-IN
+- GitHub publishing: PASS
+- Render deployment: PASS
+- Live landing page: PASS
+- Live authentication: PASS
+- Live Aiven product creation and update: PASS
