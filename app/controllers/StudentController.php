@@ -12,12 +12,12 @@ class StudentController extends Controller
     private function student_data()
     {
         return [
-            'student_id' => getenv('STUDENT_ID') ?: 'Not provided',
+            'student_id' => getenv('STUDENT_ID') ?: '00079',
             'name' => 'Prince Lawrence Dimaapi',
             'course' => getenv('STUDENT_COURSE') ?: 'BS Information Technology',
-            'year_level' => getenv('STUDENT_YEAR_LEVEL') ?: 'Not provided',
-            'section' => getenv('STUDENT_SECTION') ?: 'Not provided',
-            'email' => getenv('STUDENT_EMAIL') ?: 'Not provided',
+            'year_level' => getenv('STUDENT_YEAR_LEVEL') ?: '3rd Year',
+            'section' => getenv('STUDENT_SECTION') ?: '2-F2',
+            'email' => getenv('STUDENT_EMAIL') ?: 'princedimaapi.com',
         ];
     }
 
