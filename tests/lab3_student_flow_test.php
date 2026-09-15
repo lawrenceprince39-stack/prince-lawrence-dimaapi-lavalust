@@ -34,6 +34,10 @@ expect_true(str_contains($controller, "getenv('STUDENT_COURSE')"), 'course confi
 expect_true(str_contains($controller, "getenv('STUDENT_YEAR_LEVEL')"), 'year level configuration missing');
 expect_true(str_contains($controller, "getenv('STUDENT_SECTION')"), 'section configuration missing');
 expect_true(str_contains($controller, "getenv('STUDENT_EMAIL')"), 'email configuration missing');
+expect_true(str_contains($controller, "getenv('STUDENT_ID') ?: '00079'"), 'student ID default is incorrect');
+expect_true(str_contains($controller, "getenv('STUDENT_YEAR_LEVEL') ?: '3rd Year'"), 'year level default is incorrect');
+expect_true(str_contains($controller, "getenv('STUDENT_SECTION') ?: '2-F2'"), 'section default is incorrect');
+expect_true(str_contains($controller, "getenv('STUDENT_EMAIL') ?: 'princedimaapi.com'"), 'email default is incorrect');
 expect_true(str_contains($routes, "'/student', 'StudentController::index'"), 'student route missing');
 expect_true(str_contains($routes, "'/student/profile', 'StudentController::profile'"), 'profile route missing');
 expect_true(str_contains($routes, "->middleware('student_access')"), 'profile middleware attachment missing');
