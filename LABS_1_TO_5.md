@@ -9,7 +9,7 @@ Framework: LavaLust
 1. Install PHP, Apache (Laragon/XAMPP/WAMP are acceptable), Git, Composer, and MySQL.
 2. Copy `.env.example` to `.env` and set `APP_URL` to the local project URL (including the trailing slash).
 3. Generate a strong random `APP_KEY` and set a non-default `AUTH_USERNAME` and `AUTH_PASSWORD`.
-4. Fill `STUDENT_ID`, `STUDENT_YEAR_LEVEL`, `STUDENT_SECTION`, and `STUDENT_EMAIL` with Prince Lawrence Dimaapi's real information. These values were intentionally not invented.
+4. Lab 3 uses Student ID `00079`, Year Level `3rd Year`, Section `2-F2`, and Email `princedimaapi.com` for Prince Lawrence Dimaapi.
 5. For local MySQL, set `DB_HOST=localhost`, `DB_PORT=3306`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE=mydb`.
 6. The application creates `mydb`, `users`, and `products` automatically on the first `/users` or `/products` request. The SQL files in `database/` remain available for manual import.
 7. Configure the web-server document root for this folder and enable Apache `mod_rewrite` and `.htaccess` overrides.
