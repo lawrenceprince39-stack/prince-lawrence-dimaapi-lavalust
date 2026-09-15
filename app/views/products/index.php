@@ -1,110 +1,53 @@
 <?php
 defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
-
-$escape = static function ($value) {
-    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
-};
-
+$escape = static function ($value) { return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8'); };
 $productCount = is_array($products ?? null) ? count($products) : 0;
+$totalBottles = 0;
+$inventoryValue = 0.0;
+$lowStock = 0;
+foreach (($products ?? []) as $item) {
+    $quantity = (int) ($item['quantity'] ?? 0);
+    $totalBottles += $quantity;
+    $inventoryValue += ((float) ($item['price'] ?? 0)) * $quantity;
+    if ($quantity <= 5) { $lowStock++; }
+}
 ?>
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= $escape($title) ?></title>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dimaapi Spirits | Liquor Inventory</title>
     <style>
-        :root { --ink:#3d271b; --muted:#756a62; --brand:#93613d; --brand-dark:#754829; --cream:#f5f0e9; --paper:#fffaf4; --line:#ddd2c6; --success-bg:#e8f3eb; --success-text:#315c43; --danger:#8d3734; }
-        * { box-sizing:border-box; }
-        body { margin:0; background:var(--cream); color:var(--ink); font-family:Arial,Helvetica,sans-serif; line-height:1.6; }
-        a { color:inherit; }
-        .topbar { background:rgba(255,250,244,.96); border-bottom:1px solid var(--line); }
-        .nav,.workspace { width:min(1400px,calc(100% - 40px)); margin:0 auto; }
-        .nav { min-height:98px; display:flex; align-items:center; justify-content:space-between; gap:28px; }
-        .brand { display:flex; align-items:center; gap:14px; text-decoration:none; }
-        .brand-mark { width:52px; height:52px; display:grid; place-items:center; border-radius:50%; color:#fffaf4; background:var(--brand); font:700 25px/1 Georgia,serif; }
-        .brand-name { display:block; font:700 21px/1.15 Georgia,serif; letter-spacing:.01em; }
-        .brand-subtitle { display:block; margin-top:4px; color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
-        .nav-links { display:flex; align-items:center; gap:14px; }
-        .nav-link { padding:11px 8px; font-weight:700; text-decoration:none; }
-        .user-pill,.logout { min-height:44px; display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:8px 18px; text-decoration:none; }
-        .logout { border-radius:10px; background:var(--paper); font-weight:700; }
-        .workspace { padding:68px 0 80px; }
-        .notice,.error { margin:0 0 30px; padding:18px 22px; border:1px solid #c5d8ca; border-radius:12px; }
-        .notice { background:var(--success-bg); color:var(--success-text); }
-        .error { background:#f8e8e6; border-color:#e4bfba; color:var(--danger); }
-        .hero { display:flex; align-items:end; justify-content:space-between; gap:28px; margin:0 0 38px; }
-        .eyebrow { margin:0 0 12px; color:var(--brand-dark); font-size:13px; font-weight:800; letter-spacing:.22em; text-transform:uppercase; }
-        h1 { margin:0; font:500 clamp(48px,6vw,78px)/.98 Georgia,'Times New Roman',serif; letter-spacing:-.04em; }
-        .lead { margin:20px 0 0; color:var(--muted); font-size:18px; }
-        .primary { min-height:54px; display:inline-flex; align-items:center; justify-content:center; gap:9px; flex:0 0 auto; padding:12px 22px; border-radius:10px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; transition:background .2s ease,box-shadow .2s ease; }
-        .primary:hover { background:var(--brand-dark); box-shadow:0 8px 20px rgba(117,72,41,.16); }
-        .primary:focus-visible,.action:focus-visible,.logout:focus-visible,.nav-link:focus-visible { outline:3px solid #c99a70; outline-offset:3px; }
-        .panel { overflow:hidden; background:var(--paper); border:1px solid var(--line); border-radius:18px; box-shadow:0 12px 34px rgba(67,43,27,.05); }
-        .panel-head { min-height:92px; padding:22px 30px; display:flex; align-items:center; justify-content:space-between; gap:20px; border-bottom:1px solid var(--line); }
-        .panel-title { margin:0; font:700 27px/1.2 Georgia,serif; }
-        .counter { padding:6px 14px; border-radius:999px; background:#fbf4eb; font-size:13px; font-weight:800; }
-        .table-scroll { overflow-x:auto; }
-        table { width:100%; min-width:940px; border-collapse:collapse; }
-        th { padding:20px 24px; background:#f7f1e9; color:#6b584b; font-size:12px; letter-spacing:.14em; text-align:left; text-transform:uppercase; }
-        td { padding:25px 24px; border-top:1px solid var(--line); color:#5c5048; vertical-align:middle; }
-        tbody tr { transition:background .2s ease; }
-        tbody tr:hover { background:#fffdf9; }
-        .id { color:var(--ink); font-weight:700; white-space:nowrap; }
-        .product-name { color:var(--ink); font-weight:800; }
-        .description { max-width:420px; }
-        .numeric,.date { white-space:nowrap; }
-        .actions { display:flex; gap:8px; flex-wrap:wrap; }
-        .actions form { margin:0; }
-        .action { min-height:40px; display:inline-flex; align-items:center; justify-content:center; padding:7px 13px; border:1px solid var(--line); border-radius:9px; background:transparent; color:var(--ink); font:700 14px/1 Arial,sans-serif; text-decoration:none; cursor:pointer; transition:background .2s ease,border-color .2s ease; }
-        .action:hover { background:#f3e8dc; border-color:#c7ad96; }
-        .danger { color:var(--danger); }
-        .empty { padding:50px 24px; text-align:center; }
-        @media (max-width:760px) { .nav,.workspace{width:min(100% - 28px,1400px)} .nav{padding:18px 0;align-items:flex-start} .brand-subtitle,.user-pill,.nav-link{display:none} .workspace{padding-top:42px} .hero{align-items:stretch;flex-direction:column} h1{font-size:46px} .primary{align-self:flex-start} .panel-head{padding:20px} th,td{padding-left:18px;padding-right:18px} }
-        @media (prefers-reduced-motion:reduce) { * { scroll-behavior:auto!important; transition:none!important; } }
+        :root{--coal:#12110f;--coal-2:#1c1917;--panel:#24211e;--panel-2:#2d2925;--gold:#d8a84e;--gold-2:#f0cd83;--cream:#f8f1e5;--muted:#b9afa0;--line:#453e36;--danger:#ff8d83;--success:#9fd4ad}
+        *{box-sizing:border-box}html{color-scheme:dark}body{margin:0;min-height:100vh;background:radial-gradient(circle at 85% 5%,rgba(216,168,78,.12),transparent 30%),var(--coal);color:var(--cream);font-family:Arial,Helvetica,sans-serif;line-height:1.6}a{color:inherit}
+        .topbar{position:sticky;top:0;z-index:10;background:rgba(18,17,15,.92);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}.nav,.shell{width:min(1420px,calc(100% - 44px));margin:0 auto}.nav{min-height:94px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{display:flex;align-items:center;gap:14px;text-decoration:none}.brand-mark{width:52px;height:58px;display:grid;place-items:center;color:var(--gold-2);border:1px solid #745c34;border-radius:10px 10px 16px 16px;background:linear-gradient(145deg,#32281c,#1d1915)}.brand-mark svg{width:28px;height:34px}.brand strong{display:block;font:600 22px/1.15 Georgia,serif;letter-spacing:.02em}.brand small{display:block;margin-top:4px;color:var(--gold-2);font-size:11px;font-weight:800;letter-spacing:.19em;text-transform:uppercase}.nav-links{display:flex;align-items:center;gap:12px}.nav-link{padding:10px;font-weight:700;text-decoration:none}.user-pill,.logout{min-height:44px;display:inline-flex;align-items:center;padding:8px 17px;border:1px solid var(--line);border-radius:999px;text-decoration:none}.logout{border-radius:9px;font-weight:800;background:var(--panel)}
+        .shell{padding:58px 0 84px}.notice,.error{margin:0 0 26px;padding:16px 19px;border-radius:10px}.notice{color:#d8f3df;background:#1c3526;border:1px solid #376149}.error{color:#ffd3cf;background:#432220;border:1px solid #74403c}.hero{display:flex;align-items:end;justify-content:space-between;gap:26px;margin-bottom:34px}.eyebrow{margin:0 0 10px;color:var(--gold-2);font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}h1{margin:0;font:500 clamp(48px,6vw,76px)/1 Georgia,'Times New Roman',serif;letter-spacing:-.035em}.lead{max-width:680px;margin:18px 0 0;color:var(--muted);font-size:17px}.primary{min-height:52px;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:12px 20px;border-radius:9px;background:var(--gold);color:#17120b;font-weight:900;text-decoration:none;transition:background .2s ease,box-shadow .2s ease}.primary:hover{background:var(--gold-2);box-shadow:0 10px 28px rgba(216,168,78,.18)}
+        .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}.metric{padding:20px 22px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,rgba(45,41,37,.96),rgba(31,29,26,.96))}.metric-label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.metric-label svg{width:17px;color:var(--gold)}.metric-value{display:block;margin-top:8px;font:600 31px/1.2 Georgia,serif;color:#fff7e9}
+        .panel{overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:0 18px 55px rgba(0,0,0,.2)}.panel-head{min-height:84px;padding:20px 26px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line)}.panel-title{margin:0;font:600 27px/1.2 Georgia,serif}.counter{padding:6px 13px;border:1px solid #5c4c31;border-radius:999px;background:#2d271e;color:var(--gold-2);font-size:12px;font-weight:800}.table-wrap{overflow-x:auto}table{width:100%;min-width:1000px;border-collapse:collapse}th{padding:17px 21px;background:#1e1b18;color:#c9bdad;font-size:11px;letter-spacing:.14em;text-align:left;text-transform:uppercase}td{padding:23px 21px;border-top:1px solid var(--line);color:#d2c8bb;vertical-align:middle}tbody tr{transition:background .2s ease}tbody tr:hover{background:#2a2622}.id,.bottle{color:#fff6e6;font-weight:800}.notes{max-width:390px}.money,.date{white-space:nowrap}.stock{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;background:var(--success)}.dot.low{background:#f1b15e}.actions{display:flex;gap:8px}.actions form{margin:0}.action{min-height:40px;display:inline-flex;align-items:center;padding:7px 13px;border:1px solid #554b41;border-radius:8px;background:transparent;color:#f5ead8;font:700 13px/1 Arial,sans-serif;text-decoration:none;cursor:pointer;transition:background .2s ease,border-color .2s ease}.action:hover{background:#393129;border-color:#8f7247}.danger{color:var(--danger)}.empty{text-align:center;padding:48px}
+        .primary:focus-visible,.action:focus-visible,.logout:focus-visible,.nav-link:focus-visible{outline:3px solid var(--gold-2);outline-offset:3px}
+        @media(max-width:760px){.nav,.shell{width:min(100% - 28px,1420px)}.nav{min-height:80px}.brand strong{font-size:18px}.brand small,.nav-link,.user-pill{display:none}.shell{padding-top:38px}.hero{align-items:stretch;flex-direction:column}h1{font-size:46px}.primary{align-self:flex-start}.metrics{grid-template-columns:1fr}.panel-head{padding:18px}.table-wrap{overflow:visible}table,thead,tbody,tr,th,td{display:block;min-width:0}thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}tbody tr{padding:12px 18px;border-top:1px solid var(--line)}tbody tr:first-child{border-top:0}td{display:grid;grid-template-columns:108px 1fr;gap:12px;padding:9px 0;border:0}td::before{content:attr(data-label);color:#9f9283;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.empty{display:block;text-align:left}.empty::before{display:none}.actions{justify-content:flex-start}}
+        @media(prefers-reduced-motion:reduce){*{transition:none!important}}
     </style>
 </head>
 <body>
-<header class="topbar">
-    <nav class="nav" aria-label="Product navigation">
-        <a class="brand" href="<?= $escape(site_url('products')) ?>">
-            <span class="brand-mark" aria-hidden="true">P</span>
-            <span><span class="brand-name">Dimaapi Product Hub</span><span class="brand-subtitle">Inventory Management</span></span>
-        </a>
-        <div class="nav-links">
-            <a class="nav-link" href="<?= $escape(site_url('products')) ?>">Products</a>
-            <span class="user-pill">Prince Lawrence</span>
-            <a class="logout" href="<?= $escape(site_url('logout')) ?>">Log out</a>
-        </div>
-    </nav>
-</header>
-<main class="workspace">
-    <?php if (!empty($notice)): ?><p class="notice" role="status"><?= $escape($notice) ?></p><?php endif; ?>
-    <?php if (!empty($error)): ?><p class="error" role="alert"><?= $escape($error) ?></p><?php endif; ?>
-    <section class="hero" aria-labelledby="page-title">
-        <div><p class="eyebrow">Inventory workspace</p><h1 id="page-title">Product Collection</h1><p class="lead">Review stock levels, pricing, and product details in one place.</p></div>
-        <a class="primary" href="<?= $escape(site_url('products/create')) ?>"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add product</a>
+<header class="topbar"><nav class="nav" aria-label="Liquor inventory navigation">
+    <a class="brand" href="<?= $escape(site_url('products')) ?>"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 32" fill="none"><path d="M9 2h6v5l2 3v16c0 2-1 3-3 3h-4c-2 0-3-1-3-3V10l2-3V2Z" stroke="currentColor" stroke-width="1.7"/><path d="M8 14h8v8H8z" stroke="currentColor" stroke-width="1.4"/></svg></span><span><strong>Dimaapi Spirits</strong><small>Cellar & Inventory</small></span></a>
+    <div class="nav-links"><a class="nav-link" href="<?= $escape(site_url('products')) ?>">Bottle inventory</a><span class="user-pill">Prince Lawrence</span><a class="logout" href="<?= $escape(site_url('logout')) ?>">Log out</a></div>
+</nav></header>
+<main class="shell">
+    <?php if (!empty($notice)): ?><p class="notice" role="status"><?= $escape($notice) ?></p><?php endif; ?><?php if (!empty($error)): ?><p class="error" role="alert"><?= $escape($error) ?></p><?php endif; ?>
+    <section class="hero" aria-labelledby="page-title"><div><p class="eyebrow">Private inventory workspace</p><h1 id="page-title">The Bottle Room</h1><p class="lead">Track every bottle, price, and stock level across the Dimaapi Spirits collection.</p></div><a class="primary" href="<?= $escape(site_url('products/create')) ?>"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add bottle</a></section>
+    <section class="metrics" aria-label="Inventory summary">
+        <article class="metric"><span class="metric-label"><svg viewBox="0 0 24 24" fill="none"><path d="M9 3h6v4l2 3v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-9l2-3V3Z" stroke="currentColor" stroke-width="1.8"/></svg>Labels carried</span><strong class="metric-value"><?= $escape($productCount) ?></strong></article>
+        <article class="metric"><span class="metric-label"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M6 16l4-5 3 3 5-7" stroke="currentColor" stroke-width="1.8"/></svg>Bottles in stock</span><strong class="metric-value"><?= $escape(number_format($totalBottles)) ?></strong></article>
+        <article class="metric"><span class="metric-label"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M16 7.5c0-2-1.8-3-4-3s-4 1-4 3 1.5 3 4 3 4 1 4 3-1.8 3-4 3-4-1-4-3" stroke="currentColor" stroke-width="1.8"/></svg>Inventory value</span><strong class="metric-value">₱<?= $escape(number_format($inventoryValue, 2)) ?></strong></article>
     </section>
-    <section class="panel" aria-labelledby="records-title">
-        <div class="panel-head"><h2 class="panel-title" id="records-title">Product records</h2><span class="counter"><?= $escape($productCount) ?> <?= $productCount === 1 ? 'record' : 'records' ?></span></div>
-        <div class="table-scroll"><table>
-            <thead><tr><th>ID</th><th>Product</th><th>Description</th><th>Price</th><th>Quantity</th><th>Created</th><th>Actions</th></tr></thead>
-            <tbody>
-            <?php if (empty($products)): ?><tr><td class="empty" colspan="7">No products found. Add your first product to begin.</td></tr>
-            <?php else: foreach ($products as $product): ?>
-                <tr>
-                    <td class="id">#<?= $escape($product['id']) ?></td>
-                    <td class="product-name"><?= $escape($product['product_name']) ?></td>
-                    <td class="description"><?= $escape($product['description']) ?></td>
-                    <td class="numeric">₱<?= $escape(number_format((float) $product['price'], 2)) ?></td>
-                    <td class="numeric"><?= $escape($product['quantity']) ?></td>
-                    <td class="date"><?= $escape(date('M j, Y', strtotime($product['created_at']))) ?></td>
-                    <td><div class="actions"><a class="action" href="<?= $escape(site_url('products/edit/' . (int) $product['id'])) ?>">Edit</a><form method="post" action="<?= $escape(site_url('products/delete/' . (int) $product['id'])) ?>" onsubmit="return confirm('Delete this product?');"><button class="action danger" type="submit">Delete</button></form></div></td>
-                </tr>
-            <?php endforeach; endif; ?>
-            </tbody>
-        </table></div>
-    </section>
+    <section class="panel" aria-labelledby="records-title"><div class="panel-head"><h2 class="panel-title" id="records-title">Liquor collection</h2><span class="counter"><?= $escape($lowStock) ?> low-stock <?= $lowStock === 1 ? 'label' : 'labels' ?></span></div><div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Bottle</th><th>Details</th><th>Unit price</th><th>Stock</th><th>Added</th><th>Actions</th></tr></thead><tbody>
+        <?php if (empty($products)): ?><tr><td class="empty" colspan="7">The cellar is empty. Add your first bottle to begin.</td></tr>
+        <?php else: foreach ($products as $product): $quantity=(int)$product['quantity']; ?>
+        <tr><td class="id" data-label="ID">#<?= $escape($product['id']) ?></td><td class="bottle" data-label="Bottle"><?= $escape($product['product_name']) ?></td><td class="notes" data-label="Details"><?= $escape($product['description']) ?></td><td class="money" data-label="Unit price">₱<?= $escape(number_format((float)$product['price'],2)) ?></td><td data-label="Stock"><span class="stock"><span class="dot <?= $quantity <= 5 ? 'low' : '' ?>" aria-hidden="true"></span><?= $escape($quantity) ?> bottles</span></td><td class="date" data-label="Added"><?= $escape(date('M j, Y',strtotime($product['created_at']))) ?></td><td data-label="Actions"><div class="actions"><a class="action" href="<?= $escape(site_url('products/edit/'.(int)$product['id'])) ?>">Edit</a><form method="post" action="<?= $escape(site_url('products/delete/'.(int)$product['id'])) ?>" onsubmit="return confirm('Remove this bottle from inventory?');"><button class="action danger" type="submit">Delete</button></form></div></td></tr>
+        <?php endforeach; endif; ?>
+        </tbody></table></div></section>
 </main>
-</body>
-</html>
+</body></html>
