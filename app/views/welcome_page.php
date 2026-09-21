@@ -6,7 +6,7 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prince Lawrence Dimaapi - LavaLust Labs 1-5</title>
+    <title>LavaLust Framework - Laboratories 1-5</title>
     <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700;800&family=Unbounded:wght@400;500&display=swap" rel="stylesheet">
@@ -561,7 +561,7 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 <nav>
     <a class="nav-logo" href="#">
         <div class="flame">🔥</div>
-        Prince Lawrence Dimaapi
+        LavaLust Framework
     </a>
     <div class="nav-links">
         <a href="https://lavalust.netlify.app/docs/" target="_blank">Docs</a>
@@ -574,10 +574,10 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 <div class="hero wrap">
     <div class="badge">Web Systems and Technologies 2 - Labs 1-5</div>
     <h1>
-        <span class="word-lava">Prince</span> <span class="word-lust">Lawrence</span><br>Dimaapi
+        <span class="word-lava">Lava</span><span class="word-lust">Lust</span><br>Framework
     </h1>
     <p class="hero-sub">
-        A personalized LavaLust project featuring middleware, MVC database retrieval, authentication, and product CRUD.
+        A complete LavaLust learning project featuring routing, middleware, MVC database retrieval, authentication, and product CRUD.
     </p>
     <div class="hero-actions">
         <a href="<?= site_url('student') ?>" class="btn btn-primary">
